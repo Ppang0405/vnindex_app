@@ -1,0 +1,21 @@
+{
+  "name": "cafef-stock-scraper",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for scraping Vietnam stock market data using Browser Rendering API",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "esbuild src/index.js --bundle --outfile=dist/index.js --format=esm",
+    "deploy": "wrangler publish"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.0.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.5",
+    "wrangler": "^3.22.1"
+  },
+  "engines": {
+    "node": ">=16.13.0"
+  }
+}

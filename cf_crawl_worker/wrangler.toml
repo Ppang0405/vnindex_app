@@ -1,0 +1,20 @@
+name = "cafef-stock-scraper"
+main = "src/index.js"
+compatibility_date = "2025-08-14"
+node_compat = true
+workers_dev = true
+
+# Updated browser binding format for 2025
+[browser]
+binding = "MYBROWSER"
+
+# Optional KV namespace for caching
+# [[kv_namespaces]]
+# binding = "STOCK_DATA"
+# id = "<YOUR_KV_NAMESPACE_ID>"
+
+[build]
+command = "npm run build"
+
+[vars]
+# Define environment variables here if needed
