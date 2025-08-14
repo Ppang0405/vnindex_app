@@ -1371,7 +1371,17 @@ Let me create this file:</details></think>
 
 ---
 
+I've created a detailed cost analysis document in the docs folder. The file includes:
 
+1. Current Cloudflare Browser Rendering API pricing structure
+2. Detailed calculations for your 360 calls per day scenario
+3. Monthly cost breakdown with minimum and maximum estimates
+4. Annual cost projections 
+5. Potential optimization strategies (for reference)
+
+The document is now available at `docs/cf_browser_api_costs.md`.
+
+The analysis confirms that running 360 calls per day would cost approximately $5.18-$5.99 per month on the Workers Paid plan, which is quite reasonable for a production-ready browser automation service.
 
 ---
 
