@@ -4,7 +4,7 @@ import threading
 import pandas as pd
 import rumps
 
-from helper import fetch_stock_data
+from helper import fetch_stock_data_with_fallback
 
 
 class VNIndexApp(rumps.App):
@@ -21,11 +21,15 @@ class VNIndexApp(rumps.App):
             "VN30",
             "HNX-Index",
             None,  # Separator
+            "Use Safari Scraper",
+            "Use API Only", 
+            None,  # Separator
             "Refresh",
         ]
 
-        # Set default index
+        # Set default index and scraping method
         self.current_index = "VNINDEX"
+        self.use_safari_scraper = False
 
         # Start the update timer
         self.timer = rumps.Timer(self.update_index_value, 60)  # Update every 60 seconds
@@ -48,6 +52,18 @@ class VNIndexApp(rumps.App):
     def set_hnx(self, _):
         self.current_index = "HNX"
         self.update_index_value()
+        
+    @rumps.clicked("Use Safari Scraper")
+    def toggle_safari_scraper(self, _):
+        self.use_safari_scraper = True
+        print("🌐 Enabled Safari scraper mode")
+        self.update_index_value()
+        
+    @rumps.clicked("Use API Only")
+    def toggle_api_only(self, _):
+        self.use_safari_scraper = False
+        print("📡 Enabled API-only mode")
+        self.update_index_value()
 
     @rumps.clicked("Refresh")
     def manual_refresh(self, _):
@@ -59,7 +75,7 @@ class VNIndexApp(rumps.App):
 
     def fetch_index(self):
         try:
-            # Fetch index data using VNDIRECT API
+            # Fetch index data
             symbol = self.current_index
 
             # Define date range (last 5 days)
@@ -68,8 +84,15 @@ class VNIndexApp(rumps.App):
                 "%Y-%m-%d"
             )
 
-            # Fetch data from VNDIRECT API
-            data = fetch_stock_data(symbol, start_date, today)
+            # Choose data source based on user preference
+            if self.use_safari_scraper:
+                print(f"🌐 Using Safari scraper for {symbol}")
+                from safari_scraper import fetch_stock_data_safari
+                data = fetch_stock_data_safari(symbol, start_date, today)
+            else:
+                print(f"📡 Using API with Safari fallback for {symbol}")
+                data = fetch_stock_data_with_fallback(symbol, start_date, today)
+                
             if not data:
                 raise Exception(f"No data returned for {symbol}")
 
@@ -88,14 +111,24 @@ class VNIndexApp(rumps.App):
             change = latest_value - prev_close
             change_pct = (change / prev_close) * 100
 
+            # Use change data from scraper if available
+            if 'changePercent' in index_data.columns and not pd.isna(index_data["changePercent"].iloc[-1]):
+                change_pct = index_data["changePercent"].iloc[-1]
+            
+            if 'change' in index_data.columns and not pd.isna(index_data["change"].iloc[-1]):
+                change = index_data["change"].iloc[-1]
+
             # Format the display with an up or down indicator
+            source_indicator = "🌐" if self.use_safari_scraper else "📡"
+            
             if change >= 0:
-                self.title = f"{self.current_index}: {latest_value:.2f} 🔺{abs(change_pct):.2f}%"
+                self.title = f"{source_indicator} {self.current_index}: {latest_value:.2f} 🔺{abs(change_pct):.2f}%"
             else:
-                self.title = f"{self.current_index}: {latest_value:.2f} 🔻{abs(change_pct):.2f}%"
+                self.title = f"{source_indicator} {self.current_index}: {latest_value:.2f} 🔻{abs(change_pct):.2f}%"
 
         except Exception as e:
-            self.title = f"{self.current_index}: Error"
+            error_indicator = "🌐❌" if self.use_safari_scraper else "📡❌"
+            self.title = f"{error_indicator} {self.current_index}: Error"
             print(f"Error fetching data: {e}")
 
 
